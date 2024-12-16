@@ -9,7 +9,7 @@ def self_attention(
     query: Tensor,
     key: Tensor,
     value: Tensor,
-    dropout: float = None,
+    dropout: nn.Dropout = None,
     mask=None,
 ):
     d_k = query.size(-1)
@@ -23,8 +23,7 @@ def self_attention(
         scores = scores.masked_fill(mask == 0, -1e9)
     self_att = F.softmax(scores, -1)
     if dropout is not None:
-        self_dropout = nn.Dropout(dropout)
-        self_att = self_dropout(self_att)
+        self_att = dropout(self_att)
     return torch.matmul(self_att, value), self_att
 
 
@@ -34,14 +33,25 @@ class MultiHeadSelfAttention(nn.Module):
 
     def forward(
         self,
-        head: int,
-        d_model: int,
         query: Tensor,
         key: Tensor,
         value: Tensor,
+        head: int = 8,
+        d_model: int = 512,
         dropout=0.1,
         mask=None,
     ):
+        """
+
+        Args:
+            query (Tensor):Q
+            key (Tensor): K
+            value (Tensor): V
+            head (int, optional): 头数. Defaults to 8.
+            d_model (int, optional): 输入维度. Defaults to 512.
+            dropout (float, optional): _description_. Defaults to 0.1.
+            mask (_type_, optional): _description_. Defaults to None.
+        """
         assert d_model % head == 0
         self.d_k = d_model // head
         self.head = head
@@ -56,4 +66,31 @@ class MultiHeadSelfAttention(nn.Module):
             mask = mask.unsqueese(1)
 
         n_batch = query.size(0)
-        return
+
+        query = (
+            self.linear_query(query)
+            .view(n_batch, -1, self.head, self.d_k)
+            .transpose(1, 2)
+        )
+        key = (
+            self.linear_value(key)
+            .view(n_batch, -1, self.head, self.d_k)
+            .transpose(1, 2)
+        )
+        value = (
+            self.linear_value(value)
+            .view(n_batch, -1, self.head, self.d_k)
+            .transpose(1, 2)
+        )
+
+        x, self.attn = self_attention(
+            query,
+            key,
+            value,
+            dropout=self.dropout,
+            mask=mask,
+        )
+
+        x = x.transpose(1, 2).contiguous().view(n_batch, -1, self.head + self.d_k)
+
+        return self.linear_out(x)
