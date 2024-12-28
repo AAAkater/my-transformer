@@ -49,3 +49,10 @@ class SubLayoutConnection(nn.Module):
             _type_: _description_
         """
         return self.dropout(self.layer_norm(x + sub_layer(x)))
+
+
+if __name__ == "__main__":
+    x = torch.randn(3, 4, 5)
+    sub_layer = nn.Linear(5, 5)
+    sub_layout_connection = SubLayoutConnection(5)
+    print(sub_layout_connection(x, sub_layer))
