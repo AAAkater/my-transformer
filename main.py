@@ -1,58 +1,89 @@
-from torch import Tensor, nn
+import math
+
 import torch
+import torch.nn.functional as F
+from torch import Tensor, nn
+
+from app.my_decoder import TransformerDecoderLayer
+from app.my_encoder import TransformerEncoderLayer
 
 
-class LayerNorm(nn.Module):
-
-    def __init__(self, feature: int, eps: float = 1e-6):
-        """
-
-        Args:
-            feature (int): self-attention的x的大小
-            eps (float, optional): _description_. Defaults to 1e-6.
-        """
-        super(LayerNorm, self).__init__()
-        self.a_2 = nn.Parameter(torch.ones(feature))
-        self.b_2 = nn.Parameter(torch.zeros(feature))
-        self.eps = eps
-
-    def forward(self, x: Tensor):
-        mean = x.mean(-1, keepdim=True)
-        std = x.std(-1, keepdim=True)
-        return self.a_2 * (x - mean) / (std + self.eps) + self.b_2
-
-
-class SubLayoutConnection(nn.Module):
+class Transformer(nn.Module):
     """
-    残差+layer_norm
-
-    Args:
-        nn (_type_): _description_
+    transformer
     """
 
-    def __init__(self, size: int, dropout: float = 0.1):
-        super(
-            SubLayoutConnection,
-            self,
-        ).__init__()
-        self.layer_norm = LayerNorm(size)
-        self.dropout = nn.Dropout(dropout)
+    def __init__(
+        self,
+        src_vocab_size: int,
+        tgt_vocab_size: int,
+        d_model: int = 512,
+        head_nums: int = 8,
+        num_encoder_layers: int = 6,
+        num_decoder_layers: int = 6,
+        dim_feedforward: int = 2048,
+        dropout_rate: float = 0.1,
+    ):
+        super(Transformer, self).__init__()
+        self.encoder = nn.ModuleList(
+            [
+                TransformerEncoderLayer(
+                    d_model,
+                    head_nums,
+                    dim_feedforward,
+                    dropout_rate,
+                )
+                for _ in range(num_encoder_layers)
+            ]
+        )
 
-    def forward(self, x: Tensor, sub_layer):
+        self.decoder = nn.ModuleList(
+            [
+                TransformerDecoderLayer(
+                    d_model,
+                    head_nums,
+                    dim_feedforward,
+                    dropout_rate,
+                )
+                for _ in range(num_decoder_layers)
+            ]
+        )
+
+        self.src_embed = nn.Embedding(src_vocab_size, d_model)
+        self.tgt_embed = nn.Embedding(tgt_vocab_size, d_model)
+        self.generator = nn.Linear(d_model, tgt_vocab_size)
+
+    def forward(
+        self,
+        src: Tensor,
+        tgt: Tensor,
+        src_mask: Tensor = None,
+        tgt_mask: Tensor = None,
+    ) -> Tensor:
         """
+        向前传播
 
         Args:
-            x (Tensor): self-attention的输入
-            sub_layer (_type_): self-attention
+            src (Tensor): 源序列张量
+            tgt (Tensor): 目标序列张量
+            src_mask (Tensor, optional): 源序列张量掩码. Defaults to None.
+            tgt_mask (Tensor, optional): 目标序列张量掩码. Defaults to None.
 
         Returns:
-            _type_: _description_
+            Tensor: _description_
         """
-        return self.dropout(self.layer_norm(x + sub_layer(x)))
+        for encoder in self.encoder:
+            src = encoder(src, src_mask)
+
+        for decoder in self.decoder:
+            tgt = decoder(tgt, src, tgt_mask, src_mask)
+
+        return F.log_softmax(self.generator(tgt), dim=-1)
 
 
 if __name__ == "__main__":
-    x = torch.randn(3, 4, 5)
-    sub_layer = nn.Linear(5, 5)
-    sub_layout_connection = SubLayoutConnection(5)
-    print(sub_layout_connection(x, sub_layer))
+    src = torch.randint(0, 100, (10, 32))
+    tgt = torch.randint(0, 100, (20, 32))
+    model = Transformer(100, 100)
+    out: Tensor = model(src, tgt)
+    print(out.shape)
