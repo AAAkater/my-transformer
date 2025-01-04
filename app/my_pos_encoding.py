@@ -1,22 +1,22 @@
 import math
-from torch import Tensor, nn
+
+import numpy as np
 import torch
+import torch.nn.functional as F
+from torch import Tensor, nn
 
 
 class PositionalEncoding(nn.Module):
     """
     位置编码
-
-    Args:
-        nn (_type_): _description_
     """
 
-    def __init__(self, dim: int, dropout: nn.Dropout, max_len: int = 5000):
+    def __init__(self, dim: int, max_len: int = 5000, dropout_rate: float = 0.1):
         super(PositionalEncoding, self).__init__()
 
         if dim % 2 != 0:
             raise ValueError(f"{dim}需为偶数!")
-        self.dropout = dropout
+        self.dropout = nn.Dropout(p=dropout_rate)
         self.dim = dim
         pe = torch.zeros(max_len, dim)
         pos = torch.arange(0, max_len).unsqueeze(1)
@@ -29,7 +29,7 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(1)
         self.register_buffer("pe", pe)
 
-    def forward(self, emb: Tensor):
+    def forward(self, emb: Tensor) -> Tensor:
 
         emb = emb + self.pe[: emb.size(0)]
         return self.dropout(emb)
