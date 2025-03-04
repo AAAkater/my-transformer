@@ -1,10 +1,9 @@
 import torch
 import torch.nn.functional as F
-from regex import P
-from torch import Tensor, nn
+from model.my_attention import MultiHeadSelfAttention, ResidualConnection, feed_forward
 
-from app.my_attention import MultiHeadSelfAttention, ResidualConnection, feed_forward
-from app.my_pos_encoding import PositionalEncoding
+# from model.my_pos_encoding import PositionalEncoding
+from torch import Tensor, nn
 
 
 class TransformerDecoderLayer(nn.Module):

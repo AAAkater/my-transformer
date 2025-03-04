@@ -1,8 +1,7 @@
 import torch
 import torch.nn.functional as F
+from model.my_attention import MultiHeadSelfAttention, ResidualConnection, feed_forward
 from torch import Tensor, nn
-
-from app.my_attention import MultiHeadSelfAttention, ResidualConnection, feed_forward
 
 
 class TransformerEncoderLayer(nn.Module):

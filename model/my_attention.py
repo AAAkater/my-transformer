@@ -1,10 +1,10 @@
 import math
+
 import numpy as np
+import torch
+import torch.nn.functional as F
 from regex import T
 from torch import Tensor, nn
-import torch
-
-import torch.nn.functional as F
 
 
 def scaled_dot_product_attention(
