@@ -2,9 +2,10 @@ import math
 
 import torch
 import torch.nn.functional as F
-from model.my_decoder import TransformerDecoderLayer
-from model.my_encoder import TransformerEncoderLayer
 from torch import Tensor, nn
+
+from model.decoder import Decoder
+from model.encoder import Encoder
 
 
 class Transformer(nn.Module):
