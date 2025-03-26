@@ -23,8 +23,8 @@ class DecoderLayer(nn.Module):
         self,
         dec: Tensor,
         enc_out: Tensor,
-        self_attn_mask,
-        dec_enc_attn_mask,
+        self_attn_mask: Tensor,
+        dec_enc_attn_mask: Tensor,
     ):
         # self-attention
         residual = dec.clone()
@@ -39,7 +39,7 @@ class DecoderLayer(nn.Module):
         dec += residual
 
         # position-wise feed-forward network
-        residual = dec
+        residual = dec.clone()
         dec = self.norm3(dec)
         dec = self.pos_ffn(dec)
         dec += residual

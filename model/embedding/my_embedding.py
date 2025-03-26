@@ -16,6 +16,6 @@ class TransformerEmbedding(nn.Module):
         self.pos_emb = PositionalEncoding(d_model, max_len)
 
     def forward(self, x: Tensor) -> Tensor:
-        tok_emb = self.tok_emb(x)
-        pos_emb = self.pos_emb(x)
+        tok_emb: Tensor = self.tok_emb(x)
+        pos_emb: Tensor = self.pos_emb(x)
         return tok_emb + pos_emb

@@ -7,14 +7,12 @@ from model.embedding.my_embedding import TransformerEmbedding
 class Encoder(nn.Module):
     def __init__(
         self,
-        enc_voc_size,
-        max_len,
-        d_model,
-        ffn_hidden,
-        n_head,
-        n_layers,
-        drop_prob,
-        device,
+        enc_voc_size: int,
+        max_len: int,
+        d_model: int,
+        ffn_hidden: int,
+        n_head: int,
+        n_layers: int,
     ):
         super().__init__()
         self.emb = TransformerEmbedding(
@@ -34,10 +32,10 @@ class Encoder(nn.Module):
             ]
         )
 
-    def forward(self, x: Tensor, src_mask):
-        x = self.emb(x)
+    def forward(self, enc: Tensor, src_mask: Tensor):
+        enc = self.emb(enc)
 
         for layer in self.layers:
-            x = layer(x, src_mask)
+            enc = layer(enc, src_mask)
 
-        return x
+        return enc
