@@ -12,7 +12,7 @@ class EncoderLayer(nn.Module):
         n_head: int,
     ):
         super(EncoderLayer, self).__init__()
-        self.self_attn = MultiHeadAttention(d_model, n_head)
+        self.attn = MultiHeadAttention(d_model, n_head)
         self.pos_ffn = PositionWiseFeedForward(d_model, d_ff)
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
@@ -20,18 +20,23 @@ class EncoderLayer(nn.Module):
     def forward(
         self,
         enc: Tensor,
-        self_attn_mask,
+        mask: Tensor,
     ):
-        # self-attention
         residual = enc.clone()
+        enc = self.attn(
+            enc,
+            enc,
+            enc,
+            mask,
+        )
+        # 残差连接
+        enc += residual
         enc = self.norm1(enc)
-        enc, self_attn = self.self_attn(enc, enc, enc, self_attn_mask)
-        enc += residual
 
-        # position-wise feed-forward network
-        residual = enc
-        enc = self.norm2(enc)
+        residual = enc.clone()
         enc = self.pos_ffn(enc)
+        # 残差连接
         enc += residual
+        enc = self.norm2(enc)
 
-        return enc, self_attn
+        return enc
