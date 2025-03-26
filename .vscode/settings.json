@@ -1,0 +1,6 @@
+{
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "pyproject.toml": ".python-version,uv.lock,ruff.toml,uv.toml"
+  }
+}
