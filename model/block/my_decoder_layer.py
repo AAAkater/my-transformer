@@ -14,7 +14,7 @@ class DecoderLayer(nn.Module):
         super(DecoderLayer, self).__init__()
         self.self_attn = MultiHeadAttention(d_model, n_head)
         self.enc_dec_attn = MultiHeadAttention(d_model, n_head)
-        self.pos_ffn = PositionWiseFeedForward(d_model, d_ff)
+        self.ffn = PositionWiseFeedForward(d_model, d_ff)
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
         self.norm3 = nn.LayerNorm(d_model)
@@ -28,20 +28,33 @@ class DecoderLayer(nn.Module):
     ):
         # self-attention
         residual = dec.clone()
-        dec = self.self_attn(dec, dec, dec, self_attn_mask)
-        dec = self.norm1(dec)
+        dec = self.self_attn(
+            dec,
+            dec,
+            dec,
+            self_attn_mask,
+        )
+        # 残差连接
         dec += residual
+        dec = self.norm1(dec)
 
         # encoder-decoder attention
         residual = dec.clone()
+        dec = self.enc_dec_attn(
+            dec,
+            enc_out,
+            enc_out,
+            dec_enc_attn_mask,
+        )
+        # 残差连接
+        dec += residual
         dec = self.norm2(dec)
-        dec, dec_enc_attn = self.enc_dec_attn(dec, enc_out, enc_out, dec_enc_attn_mask)
-        dec += residual
 
-        # position-wise feed-forward network
+        # position wise feed forward network
         residual = dec.clone()
-        dec = self.norm3(dec)
-        dec = self.pos_ffn(dec)
+        dec = self.ffn(dec)
+        # 残差连接
         dec += residual
+        dec = self.norm3(dec)
 
-        return dec, dec_enc_attn
+        return dec
