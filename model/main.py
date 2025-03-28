@@ -1,7 +1,4 @@
-import math
-
 import torch
-import torch.nn.functional as F
 from torch import Tensor, nn
 
 from model.decoder import Decoder
@@ -15,75 +12,79 @@ class Transformer(nn.Module):
 
     def __init__(
         self,
+        src_pad_idx: int,
+        trg_pad_idx: int,
+        trg_sos_idx: int,
         src_vocab_size: int,
         tgt_vocab_size: int,
         d_model: int = 512,
-        head_nums: int = 8,
-        num_encoder_layers: int = 6,
-        num_decoder_layers: int = 6,
-        dim_feedforward: int = 2048,
-        dropout_rate: float = 0.1,
+        n_head: int = 8,
+        n_layer: int = 6,
+        d_ff: int = 2048,
     ):
         super(Transformer, self).__init__()
-        self.encoder = nn.ModuleList(
-            [
-                TransformerEncoderLayer(
-                    d_model,
-                    head_nums,
-                    dim_feedforward,
-                    dropout_rate,
-                )
-                for _ in range(num_encoder_layers)
-            ]
+        self.src_pad_idx = src_pad_idx
+        self.trg_pad_idx = trg_pad_idx
+        self.trg_sos_idx = trg_sos_idx
+        self.encoder = Decoder(
+            dec_voc_size=src_vocab_size,
+            max_len=5000,
+            d_model=d_model,
+            n_head=n_head,
+            d_ff=d_ff,
+            n_layers=n_layer,
         )
 
-        self.decoder = nn.ModuleList(
-            [
-                TransformerDecoderLayer(
-                    d_model,
-                    head_nums,
-                    dim_feedforward,
-                    dropout_rate,
-                )
-                for _ in range(num_decoder_layers)
-            ]
+        self.decoder = Encoder(
+            enc_voc_size=src_vocab_size,
+            d_model=d_model,
+            n_head=n_head,
+            n_layers=n_layer,
+            max_len=5000,
+            ffn_hidden=d_ff,
         )
 
         self.src_embed = nn.Embedding(src_vocab_size, d_model)
         self.tgt_embed = nn.Embedding(tgt_vocab_size, d_model)
-        self.generator = nn.Linear(d_model, tgt_vocab_size)
 
     def forward(
         self,
         src: Tensor,
-        tgt: Tensor,
-        src_mask: Tensor = None,
-        tgt_mask: Tensor = None,
+        trg: Tensor,
     ) -> Tensor:
-        """
-        向前传播
+        src_mask = self.make_src_mask(src)
+        trg_mask = self.make_trg_mask(trg)
 
-        Args:
-            src (Tensor): 源序列张量
-            tgt (Tensor): 目标序列张量
-            src_mask (Tensor, optional): 源序列张量掩码. Defaults to None.
-            tgt_mask (Tensor, optional): 目标序列张量掩码. Defaults to None.
+        enc_src: Tensor = self.encoder(src, src_mask)
 
-        Returns:
-            Tensor: _description_
-        """
-        for encoder in self.encoder:
-            src = encoder(src, src_mask)
+        output: Tensor = self.decoder(
+            trg,
+            enc_src,
+            trg_mask,
+            src_mask,
+        )
 
-        for decoder in self.decoder:
-            tgt = decoder(tgt, src, tgt_mask, src_mask)
+        return output
 
-        return F.log_softmax(self.generator(tgt), dim=-1)
+    def make_src_mask(self, src: Tensor):
+        src_mask = (
+            (src != self.src_pad_idx)
+            .unsqueeze(1)
+            .unsqueeze(
+                2,
+            )
+        )
+        return src_mask
+
+    def make_trg_mask(self, trg: Tensor):
+        trg_pad_mask = (trg != self.trg_pad_idx).unsqueeze(1).unsqueeze(3)
+        trg_len = trg.shape[1]
+        trg_sub_mask = torch.tril(
+            torch.ones(trg_len, trg_len),
+        ).to(dtype=torch.uint8)
+        trg_mask = trg_pad_mask & trg_sub_mask
+        return trg_mask
 
 
 if __name__ == "__main__":
-    src = torch.randint(0, 100, (10, 32))
-    tgt = torch.randint(0, 100, (20, 32))
-    model = Transformer(100, 100)
-    out: Tensor = model(src, tgt)
-    print(out.shape)
+    pass
