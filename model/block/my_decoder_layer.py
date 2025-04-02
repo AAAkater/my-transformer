@@ -12,7 +12,7 @@ class DecoderLayer(nn.Module):
         n_head: int,
     ):
         super(DecoderLayer, self).__init__()
-        self.self_attn = MultiHeadAttention(d_model, n_head)
+        self.dec_self_attn = MultiHeadAttention(d_model, n_head)
         self.enc_dec_attn = MultiHeadAttention(d_model, n_head)
         self.ffn = PositionWiseFeedForward(d_model, d_ff)
         self.norm1 = nn.LayerNorm(d_model)
@@ -21,40 +21,51 @@ class DecoderLayer(nn.Module):
 
     def forward(
         self,
-        dec: Tensor,
+        dec_out: Tensor,
         enc_out: Tensor,
-        self_attn_mask: Tensor,
-        dec_enc_attn_mask: Tensor,
+        src_mask: Tensor,
+        tgt_mask: Tensor,
     ):
+        """
+
+        Args:
+            dec_out (Tensor): 解码器输出
+            enc_out (Tensor): 编码器输出
+            src_mask (Tensor): 来自编码器的mask
+            tgt_mask (Tensor): 来自解码器的mask
+
+        Returns:
+            _type_: 解码器输出
+        """
         # self-attention
-        residual = dec.clone()
-        dec = self.self_attn(
-            dec,
-            dec,
-            dec,
-            self_attn_mask,
+        residual = dec_out.clone()
+        dec_out = self.dec_self_attn(
+            dec_out,
+            dec_out,
+            dec_out,
+            tgt_mask,
         )
         # 残差连接
-        dec += residual
-        dec = self.norm1(dec)
+        dec_out += residual
+        dec_out = self.norm1(dec_out)
 
         # encoder-decoder attention
-        residual = dec.clone()
-        dec = self.enc_dec_attn(
-            dec,
+        residual = dec_out.clone()
+        dec_out = self.enc_dec_attn(
+            dec_out,
             enc_out,
             enc_out,
-            dec_enc_attn_mask,
+            src_mask,
         )
         # 残差连接
-        dec += residual
-        dec = self.norm2(dec)
+        dec_out += residual
+        dec_out = self.norm2(dec_out)
 
         # position wise feed forward network
-        residual = dec.clone()
-        dec = self.ffn(dec)
+        residual = dec_out.clone()
+        dec_out = self.ffn(dec_out)
         # 残差连接
-        dec += residual
-        dec = self.norm3(dec)
+        dec_out += residual
+        dec_out = self.norm3(dec_out)
 
-        return dec
+        return dec_out

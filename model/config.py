@@ -6,9 +6,10 @@ class Settings(BaseSettings):
     device: torch.device = torch.device(
         "cuda:0" if torch.cuda.is_available() else "cpu"
     )
+    # 批次大小
     batch_size: int = 128
     # 一个句子最多包含的token数
-    max_len: int = 5000
+    max_seq_len: int = 5000
     # 用来表示一个词的向量长度
     d_model: int = 512
     # Encoder Layer 和 Decoder Layer的个数
@@ -19,6 +20,7 @@ class Settings(BaseSettings):
     ffn_hidden: int = 2048
     # 分头后的q、k、v词向量长度
     d_k: int = 64
+    drop_rate: float = 0.1
 
 
 settings = Settings()
