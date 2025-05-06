@@ -1,8 +1,26 @@
 import torch
-from pydantic_settings import BaseSettings
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    TomlConfigSettingsSource,
+)
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(toml_file="./config.toml")
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (TomlConfigSettingsSource(settings_cls),)
+
     device: torch.device = torch.device(
         "cuda:0" if torch.cuda.is_available() else "cpu"
     )
@@ -20,6 +38,7 @@ class Settings(BaseSettings):
     ffn_hidden: int = 2048
     # 分头后的q、k、v词向量长度
     d_k: int = 64
+    # 暂退率
     drop_rate: float = 0.1
 
 
