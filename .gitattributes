@@ -1,0 +1,2 @@
+chinese.txt filter=lfs diff=lfs merge=lfs -text
+english.txt filter=lfs diff=lfs merge=lfs -text
