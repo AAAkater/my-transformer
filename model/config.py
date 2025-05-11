@@ -40,6 +40,8 @@ class Settings(BaseSettings):
     d_k: int = 64
     # 暂退率
     drop_rate: float = 0.1
+    # 学习率
+    learning_rate = 0.0001
 
 
 settings = Settings()

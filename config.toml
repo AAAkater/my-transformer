@@ -14,3 +14,5 @@ ffn_hidden = 2048
 d_k = 64
 # 暂退率
 drop_rate = 0.1
+# 学习率
+learning_rate = 0.0001
