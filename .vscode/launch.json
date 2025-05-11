@@ -5,11 +5,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Transformer Practise Debug",
+      "name": "Transformer Run",
       "type": "debugpy",
       "request": "launch",
       "program": "${file}",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
     }
   ]
 }
