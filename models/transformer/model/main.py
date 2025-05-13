@@ -13,8 +13,8 @@ class Transformer(nn.Module):
     def __init__(
         self,
         src_pad_idx: int,
-        trg_pad_idx: int,
-        trg_sos_idx: int,
+        tgt_pad_idx: int,
+        tgt_sos_idx: int,
         src_vocab_size: int,
         tgt_vocab_size: int,
         d_model: int = 512,
@@ -24,10 +24,10 @@ class Transformer(nn.Module):
     ):
         super(Transformer, self).__init__()
         self.src_pad_idx = src_pad_idx
-        self.trg_pad_idx = trg_pad_idx
-        self.trg_sos_idx = trg_sos_idx
-        self.encoder = Decoder(
-            dec_voc_size=src_vocab_size,
+        self.tgt_pad_idx = tgt_pad_idx
+        self.tgt_sos_idx = tgt_sos_idx
+        self.decoder = Decoder(
+            enc_vocab_size=src_vocab_size,
             max_len=5000,
             d_model=d_model,
             n_head=n_head,
@@ -35,7 +35,7 @@ class Transformer(nn.Module):
             n_layers=n_layer,
         )
 
-        self.decoder = Encoder(
+        self.encoder = Encoder(
             enc_voc_size=src_vocab_size,
             d_model=d_model,
             n_head=n_head,
@@ -44,23 +44,20 @@ class Transformer(nn.Module):
             ffn_hidden=d_ff,
         )
 
-        self.src_embed = nn.Embedding(src_vocab_size, d_model)
-        self.tgt_embed = nn.Embedding(tgt_vocab_size, d_model)
-
     def forward(
         self,
         src: Tensor,
-        trg: Tensor,
+        tgt: Tensor,
     ) -> Tensor:
         src_mask = self.make_src_mask(src)
-        trg_mask = self.make_trg_mask(trg)
+        tgt_mask = self.make_tgt_mask(tgt)
 
         enc_src: Tensor = self.encoder(src, src_mask)
 
         output: Tensor = self.decoder(
-            trg,
+            tgt,
             enc_src,
-            trg_mask,
+            tgt_mask,
             src_mask,
         )
 
@@ -76,9 +73,9 @@ class Transformer(nn.Module):
         )
         return src_mask
 
-    def make_trg_mask(self, trg: Tensor):
-        trg_pad_mask = (trg != self.trg_pad_idx).unsqueeze(1).unsqueeze(3)
-        trg_len = trg.shape[1]
+    def make_tgt_mask(self, tgt: Tensor):
+        trg_pad_mask = (tgt != self.tgt_pad_idx).unsqueeze(1).unsqueeze(3)
+        trg_len = tgt.shape[1]
         trg_sub_mask = torch.tril(
             torch.ones(trg_len, trg_len),
         ).to(dtype=torch.uint8)
