@@ -8,7 +8,7 @@ from pydantic_settings import (
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(toml_file="./config.toml")
+    model_config = SettingsConfigDict(toml_file="./configs/transformer.toml")
 
     @classmethod
     def settings_customise_sources(
