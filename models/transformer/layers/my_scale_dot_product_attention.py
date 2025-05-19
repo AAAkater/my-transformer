@@ -1,5 +1,3 @@
-import math
-
 from torch import Tensor, nn
 from torch.nn import functional as F
 

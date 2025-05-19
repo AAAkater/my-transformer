@@ -1,7 +1,9 @@
 from torch import Tensor, nn
 
-from model.embedding.my_positional_encoding import PositionalEncoding
-from model.embedding.my_token_embedding import TokenEmbedding
+from models.transformer.embedding.my_positional_encoding import (
+    PositionalEncoding,
+)
+from models.transformer.embedding.my_token_embedding import TokenEmbedding
 
 
 class TransformerEmbedding(nn.Module):

@@ -1,6 +1,8 @@
 from torch import Tensor, nn
 
-from model.layers.my_scale_dot_product_attention import ScaleDotProductAttention
+from models.transformer.layers.my_scale_dot_product_attention import (
+    ScaleDotProductAttention,
+)
 
 
 class MultiHeadAttention(nn.Module):
