@@ -7,7 +7,7 @@ from models.transformer.embedding.my_embedding import TransformerEmbedding
 class Decoder(nn.Module):
     def __init__(
         self,
-        enc_vocab_size: int,
+        dec_vocab_size: int,
         max_len: int,
         d_model: int,
         d_ff: int,
@@ -16,7 +16,7 @@ class Decoder(nn.Module):
     ):
         super(Decoder, self).__init__()
         self.emb = TransformerEmbedding(
-            enc_vocab_size,
+            dec_vocab_size,
             d_model,
             max_len,
         )
@@ -30,7 +30,7 @@ class Decoder(nn.Module):
                 for _ in range(n_layers)
             ]
         )
-        self.linear = nn.Linear(d_model, enc_vocab_size)
+        self.linear = nn.Linear(d_model, dec_vocab_size)
 
     def forward(
         self,
