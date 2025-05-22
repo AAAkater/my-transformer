@@ -6,10 +6,6 @@ from models.transformer.encoder import Encoder
 
 
 class Transformer(nn.Module):
-    """
-    transformer
-    """
-
     def __init__(
         self,
         src_pad_idx: int,
@@ -27,7 +23,7 @@ class Transformer(nn.Module):
         self.tgt_pad_idx = tgt_pad_idx
         self.tgt_sos_idx = tgt_sos_idx
         self.decoder = Decoder(
-            enc_vocab_size=src_vocab_size,
+            dec_vocab_size=tgt_vocab_size,
             max_len=5000,
             d_model=d_model,
             n_head=n_head,
@@ -63,24 +59,21 @@ class Transformer(nn.Module):
 
         return output
 
-    def make_src_mask(self, src: Tensor):
-        src_mask = (
-            (src != self.src_pad_idx)
-            .unsqueeze(1)
-            .unsqueeze(
-                2,
-            )
-        )
-        return src_mask
+    def make_src_mask(self, src: Tensor) -> Tensor:
+        src_pad_mask = (src != self.src_pad_idx).unsqueeze(1).unsqueeze(2)
+        return src_pad_mask
 
     def make_tgt_mask(self, tgt: Tensor):
-        trg_pad_mask = (tgt != self.tgt_pad_idx).unsqueeze(1).unsqueeze(3)
-        trg_len = tgt.shape[1]
-        trg_sub_mask = torch.tril(
-            torch.ones(trg_len, trg_len),
+        # 填充掩码
+        tgt_pad_mask = (tgt != self.tgt_pad_idx).unsqueeze(1).unsqueeze(3)
+        tgt_len = tgt.shape[1]
+        # 下三角掩码
+        tgt_sub_mask = torch.tril(
+            torch.ones(tgt_len, tgt_len),
         ).to(dtype=torch.uint8)
-        trg_mask = trg_pad_mask & trg_sub_mask
-        return trg_mask
+        # 合并掩码
+        tgt_mask = tgt_pad_mask & tgt_sub_mask
+        return tgt_mask
 
 
 if __name__ == "__main__":
