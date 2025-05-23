@@ -60,18 +60,55 @@ class Transformer(nn.Module):
         return output
 
     def make_src_mask(self, src: Tensor) -> Tensor:
+        """
+        Generates a source mask to ignore padding tokens in the input sequence.
+
+        Args:
+            src (Tensor): The input source sequence tensor with shape (batch_size, seq_len).
+
+        Returns:
+            Tensor: A boolean mask tensor with shape (batch_size, 1, 1, seq_len), where `False`
+                indicates padding positions that should be ignored. The mask is created by comparing
+                each token in `src` with the padding index (`self.src_pad_idx`).
+
+        Note:
+            The mask is unsqueezed twice to add dimensions for broadcasting in subsequent operations,
+            typically in attention mechanisms.
+        """
+        # padding mask: [batch, 1, 1, src_len]
         src_pad_mask = (src != self.src_pad_idx).unsqueeze(1).unsqueeze(2)
         return src_pad_mask
 
     def make_tgt_mask(self, tgt: Tensor):
-        # 填充掩码
-        tgt_pad_mask = (tgt != self.tgt_pad_idx).unsqueeze(1).unsqueeze(3)
+        """
+        Generates a target mask for transformer decoder self-attention.
+
+        The mask combines padding mask (to ignore padding tokens) and subsequent mask
+        (to prevent attending to future tokens) for the target sequence.
+
+        Args:
+            tgt (Tensor): Target sequence tensor of shape (batch_size, seq_len).
+
+        Returns:
+            Tensor: Combined target mask of shape (batch_size, 1, seq_len, seq_len) where:
+                - False positions indicate tokens to be masked
+                - True positions indicate tokens to be attended to
+
+        The mask is constructed by:
+        1. Creating padding mask from non-padding tokens (tgt != self.tgt_pad_idx)
+        2. Creating subsequent mask using lower triangular matrix
+        3. Combining both masks with logical AND operation
+        """
+        # padding mask: [batch, 1, 1, tgt_len]
+        tgt_pad_mask = (tgt != self.tgt_pad_idx).unsqueeze(1).unsqueeze(2)
+        # sub mask: [1, 1, tgt_len, tgt_len]
         tgt_len = tgt.shape[1]
-        # 下三角掩码
-        tgt_sub_mask = torch.tril(
-            torch.ones(tgt_len, tgt_len),
-        ).to(dtype=torch.uint8)
-        # 合并掩码
+        tgt_sub_mask = (
+            torch.tril(torch.ones((tgt_len, tgt_len), dtype=torch.bool))
+            .unsqueeze(0)
+            .unsqueeze(0)
+        )
+        # merge: [batch, 1, tgt_len, tgt_len]
         tgt_mask = tgt_pad_mask & tgt_sub_mask
         return tgt_mask
 
