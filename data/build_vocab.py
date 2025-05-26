@@ -57,7 +57,7 @@ class SentencePieceVocab:
     def encode_as_pieces(self, text: str) -> list[str]:
         return self.sp_model.EncodeAsPieces(text)
 
-    def decode(self, ids: int) -> str:
+    def decode(self, ids: list[int]) -> str:
         return self.sp_model.DecodeIds(ids)
 
     def __len__(self):
