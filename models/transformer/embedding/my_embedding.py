@@ -11,11 +11,11 @@ class TransformerEmbedding(nn.Module):
         self,
         vocab_size: int,
         d_model: int,
-        max_len: int,
+        max_seq_len: int,
     ) -> None:
         super(TransformerEmbedding, self).__init__()
         self.tok_emb = TokenEmbedding(vocab_size, d_model)
-        self.pos_emb = PositionalEncoding(d_model, max_len)
+        self.pos_emb = PositionalEncoding(d_model, max_seq_len)
 
     def forward(self, x: Tensor) -> Tensor:
         tok_emb: Tensor = self.tok_emb(x)

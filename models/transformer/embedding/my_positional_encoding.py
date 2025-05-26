@@ -6,17 +6,17 @@ class PositionalEncoding(nn.Module):
     def __init__(
         self,
         d_model: int,
-        max_len: int = 5000,
+        max_seq_len: int = 5000,
     ) -> None:
         super(PositionalEncoding, self).__init__()
         assert d_model % 2 == 0, f"{d_model} must be even!"
 
-        self.encoding = torch.zeros(max_len, d_model)
+        self.encoding = torch.zeros(max_seq_len, d_model)
         self.encoding.requires_grad = False
 
         pos = torch.arange(
             0,
-            max_len,
+            max_seq_len,
             dtype=torch.float,
         ).unsqueeze(dim=1)
 
