@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 
 from data.build_vocab import SentencePieceVocab
+from models.transformer.config import settings
 
 
 class TranslationDataset(Dataset):
@@ -11,7 +12,7 @@ class TranslationDataset(Dataset):
         tgt_file: str,
         src_spm_model: SentencePieceVocab,
         tgt_spm_model: SentencePieceVocab,
-        max_length: int = 50,
+        max_seq_len: int = 128,
     ):
         self.src_spm = src_spm_model
         self.tgt_spm = tgt_spm_model
@@ -27,7 +28,7 @@ class TranslationDataset(Dataset):
             "源语言和目标语言句子数量不匹配"
         )
 
-        self.max_length = max_length
+        self.max_length = max_seq_len
 
     def __len__(self):
         return len(self.src_sentences)
@@ -74,13 +75,14 @@ class TranslationDataset(Dataset):
 zh_model = SentencePieceVocab("./data/words/spm_zh.model")
 en_model = SentencePieceVocab("./data/words/spm_en.model")
 
+
 # 创建数据集实例
 dataset = TranslationDataset(
     src_file="data/words/english.txt",
     tgt_file="data/words/chinese.txt",
     src_spm_model=zh_model,
     tgt_spm_model=en_model,
-    max_length=50,
+    max_seq_len=settings.max_seq_len,
 )
 
 
@@ -88,6 +90,12 @@ if __name__ == "__main__":
     # 示例：查看分词效果
     sample_zh = "今天天气真好"
     sample_en = "The weather is nice today"
+    # 打印数据集长度
+    print(f"{len(dataset)=}")
+
+    src_vocab_size: int = zh_model.get_vocab_size()
+    tgt_vocab_size: int = en_model.get_vocab_size()
+    print(f"{src_vocab_size=}, {tgt_vocab_size=}")
 
     print("中文分词示例:")
     print(f"原始句子: {sample_zh}")
