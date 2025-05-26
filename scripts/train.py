@@ -2,7 +2,7 @@ import torch
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
 
-from data.my_dataset import (
+from data.transformer_dataset.my_dataset import (
     dataset,
     en_model,
     zh_model,
