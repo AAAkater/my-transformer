@@ -17,27 +17,27 @@ class Transformer(nn.Module):
         n_head: int = 8,
         n_layer: int = 6,
         d_ff: int = 2048,
+        max_seq_len: int = 5000,
     ):
         super(Transformer, self).__init__()
         self.src_pad_idx = src_pad_idx
         self.tgt_pad_idx = tgt_pad_idx
         self.tgt_sos_idx = tgt_sos_idx
-        self.decoder = Decoder(
-            dec_vocab_size=tgt_vocab_size,
-            max_len=5000,
-            d_model=d_model,
-            n_head=n_head,
-            d_ff=d_ff,
-            n_layers=n_layer,
-        )
-
         self.encoder = Encoder(
             enc_voc_size=src_vocab_size,
             d_model=d_model,
             n_head=n_head,
             n_layers=n_layer,
-            max_len=5000,
+            max_seq_len=max_seq_len,
             ffn_hidden=d_ff,
+        )
+        self.decoder = Decoder(
+            dec_vocab_size=tgt_vocab_size,
+            max_seq_len=max_seq_len,
+            d_model=d_model,
+            n_head=n_head,
+            d_ff=d_ff,
+            n_layers=n_layer,
         )
 
     def forward(
@@ -50,12 +50,7 @@ class Transformer(nn.Module):
 
         enc_src: Tensor = self.encoder(src, src_mask)
 
-        output: Tensor = self.decoder(
-            tgt,
-            enc_src,
-            tgt_mask,
-            src_mask,
-        )
+        output: Tensor = self.decoder(tgt, enc_src, tgt_mask, src_mask)
 
         return output
 
