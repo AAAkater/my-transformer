@@ -8,7 +8,7 @@ class Decoder(nn.Module):
     def __init__(
         self,
         dec_vocab_size: int,
-        max_len: int,
+        max_seq_len: int,
         d_model: int,
         d_ff: int,
         n_head: int,
@@ -18,7 +18,7 @@ class Decoder(nn.Module):
         self.emb = TransformerEmbedding(
             dec_vocab_size,
             d_model,
-            max_len,
+            max_seq_len,
         )
         self.layers = nn.ModuleList(
             [
@@ -34,13 +34,13 @@ class Decoder(nn.Module):
 
     def forward(
         self,
-        dec: Tensor,
+        dec_out: Tensor,
         enc_out: Tensor,
         tgt_mask: Tensor,
         src_mask: Tensor,
     ):
-        trg: Tensor = self.emb(dec)
+        tgt: Tensor = self.emb(dec_out)
         for layer in self.layers:
-            dec = layer(trg, enc_out, tgt_mask, src_mask)
-        out_put: Tensor = self.linear(trg)
+            tgt = layer(tgt, enc_out, tgt_mask, src_mask)
+        out_put: Tensor = self.linear(tgt)
         return out_put
