@@ -36,25 +36,25 @@ class MultiHeadAttention(nn.Module):
         return out
 
     def split(self, x: Tensor) -> Tensor:
+        # (batch_size, seq_len, d_model)
         batch_size, seq_len, d_model = x.size()
 
         d_k = d_model // self.n_head
 
         x = x.view(batch_size, seq_len, self.n_head, d_k).transpose(1, 2)
-
+        # (batch_size, n_head, seq_len, d_k)
         return x
 
     def concat(self, x: Tensor) -> Tensor:
         batch_size, n_head, seq_len, d_k = x.size()
 
         x = (
+            # (batch_size, seq_len, n_head, d_k)
             x.transpose(1, 2)
+            # 保证内存连续
             .contiguous()
-            .view(
-                batch_size,
-                seq_len,
-                n_head * d_k,
-            )
+            # (batch_size, seq_len, d_model)
+            .view(batch_size, seq_len, n_head * d_k)
         )
 
         return x
