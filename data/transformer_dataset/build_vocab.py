@@ -63,15 +63,19 @@ class SentencePieceVocab:
     def __len__(self):
         return len(self.id2token)
 
-    def get_vocab_size(self) -> int:
+    @property
+    def vocab_size(self) -> int:
         return self.sp_model.GetPieceSize()
 
+    @property
     def bos_id(self) -> int:
         return self.sp_model.bos_id()
 
+    @property
     def eos_id(self) -> int:
         return self.sp_model.eos_id()
 
+    @property
     def pad_id(self) -> int:
         return self.sp_model.pad_id()
 
@@ -95,5 +99,8 @@ if __name__ == "__main__":
     zh_vocab = SentencePieceVocab("./data/words/spm_zh.model")
     en_vocab = SentencePieceVocab("./data/words/spm_en.model")
 
-    print(f"中文词汇表大小: {zh_vocab.get_vocab_size()}")
-    print(f"英文词汇表大小: {en_vocab.get_vocab_size()}")
+    print(f"中文词汇表大小: {zh_vocab.vocab_size}")
+    print(f"英文词汇表大小: {en_vocab.vocab_size}")
+
+    print(f"{zh_vocab.bos_id=}, {zh_vocab.eos_id=}, {zh_vocab.pad_id=}")
+    print(f"{en_vocab.bos_id=}, {en_vocab.eos_id=}, {en_vocab.pad_id=}")

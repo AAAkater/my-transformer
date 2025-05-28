@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 
-from data.build_vocab import SentencePieceVocab
+from data.transformer_dataset.build_vocab import SentencePieceVocab
 from models.transformer.config import settings
 
 
@@ -39,19 +39,19 @@ class TranslationDataset(Dataset):
 
         # 使用SentencePiece编码
         src_ids = (
-            [self.src_spm.bos_id()]
+            [self.src_spm.bos_id]
             + self.src_spm.encode_as_ids(src_sentence)
-            + [self.src_spm.eos_id()]
+            + [self.src_spm.eos_id]
         )
         tgt_ids = (
-            [self.tgt_spm.bos_id()]
+            [self.tgt_spm.bos_id]
             + self.tgt_spm.encode_as_ids(tgt_sentence)
-            + [self.tgt_spm.eos_id()]
+            + [self.tgt_spm.eos_id]
         )
 
         # 截断或填充到固定长度
-        src_ids = self._pad_or_truncate(src_ids, self.src_spm.pad_id())
-        tgt_ids = self._pad_or_truncate(tgt_ids, self.tgt_spm.pad_id())
+        src_ids = self._pad_or_truncate(src_ids, self.src_spm.pad_id)
+        tgt_ids = self._pad_or_truncate(tgt_ids, self.tgt_spm.pad_id)
 
         return {
             "src": torch.tensor(src_ids, dtype=torch.long),
@@ -93,8 +93,8 @@ if __name__ == "__main__":
     # 打印数据集长度
     print(f"{len(dataset)=}")
 
-    src_vocab_size: int = zh_model.get_vocab_size()
-    tgt_vocab_size: int = en_model.get_vocab_size()
+    src_vocab_size: int = zh_model.vocab_size
+    tgt_vocab_size: int = en_model.vocab_size
     print(f"{src_vocab_size=}, {tgt_vocab_size=}")
 
     print("中文分词示例:")
