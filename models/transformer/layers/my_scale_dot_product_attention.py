@@ -1,18 +1,12 @@
 from torch import Tensor, nn
-from torch.nn import functional as F
 
 
 class ScaleDotProductAttention(nn.Module):
     def __init__(self):
         super(ScaleDotProductAttention, self).__init__()
+        self.softmax = nn.Softmax(dim=-1)
 
-    def forward(
-        self,
-        q: Tensor,
-        k: Tensor,
-        v: Tensor,
-        mask: Tensor,
-    ):
+    def forward(self, q: Tensor, k: Tensor, v: Tensor, mask: Tensor):
         d_k = q.size(-1)
 
         # Q * K^T/sqrt(d_k)
@@ -26,7 +20,7 @@ class ScaleDotProductAttention(nn.Module):
 
         # 加入mask矩阵
         scores += mask
-        attn = F.softmax(scores, dim=-1)
+        attn: Tensor = self.softmax(scores)
 
         # 返回的attn: [batch_size, n_heads, seq_len, d_k]本质上还是batch_size个句子，
         # 只不过每个句子中词向量维度512被分成了8个部分，分别由8个头各自看一部分，
