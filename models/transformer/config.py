@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # 批次大小
     batch_size: int = 128
     # 一个句子最多包含的token数
-    max_seq_len: int = 5000
+    max_seq_len: int = 256
     # 用来表示一个词的向量长度
     d_model: int = 512
     # Encoder Layer 和 Decoder Layer的个数

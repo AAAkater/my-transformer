@@ -1,7 +1,7 @@
 # 批次大小
 batch_size = 128
 # 一个句子最多包含的token数
-max_seq_len = 5000
+max_seq_len = 256
 # 用来表示一个词的向量长度
 d_model = 512
 # Encoder Layer 和 Decoder Layer的个数
