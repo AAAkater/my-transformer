@@ -10,7 +10,7 @@ class Encoder(nn.Module):
         enc_voc_size: int,
         max_seq_len: int,
         d_model: int,
-        ffn_hidden: int,
+        d_ff: int,
         n_head: int,
         n_layers: int,
     ):
@@ -25,7 +25,7 @@ class Encoder(nn.Module):
             [
                 EncoderLayer(
                     d_model=d_model,
-                    d_ff=ffn_hidden,
+                    d_ff=d_ff,
                     n_head=n_head,
                 )
                 for _ in range(n_layers)

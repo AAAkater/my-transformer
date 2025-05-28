@@ -29,7 +29,7 @@ class Transformer(nn.Module):
             n_head=n_head,
             n_layers=n_layer,
             max_seq_len=max_seq_len,
-            ffn_hidden=d_ff,
+            d_ff=d_ff,
         )
         self.decoder = Decoder(
             dec_vocab_size=tgt_vocab_size,
