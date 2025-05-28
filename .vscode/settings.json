@@ -2,5 +2,6 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "pyproject.toml": ".python-version,uv.lock,ruff.toml,uv.toml"
-  }
+  },
+  "chatgpt-docstrings.promptPattern": "请用中文为以下 Python {entity} 代码生成 {docstring_style} 样式的文档字符串,注:Args,Returns,Method等这些词不需要写成中文,只需要将每个参数的解释或者函数意图等这些写成中文\n代码如下:\n{code}"
 }
