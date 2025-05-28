@@ -5,14 +5,14 @@ class PositionWiseFeedForward(nn.Module):
     def __init__(
         self,
         d_model: int,
-        ffn_hidden: int,
+        d_ff: int,
     ) -> None:
         super(PositionWiseFeedForward, self).__init__()
 
         self.net = nn.Sequential(
-            nn.Linear(d_model, ffn_hidden),
-            nn.ReLU(inplace=True),
-            nn.Linear(ffn_hidden, d_model),
+            nn.Linear(d_model, d_ff),
+            nn.ReLU(),
+            nn.Linear(d_ff, d_model),
         )
 
     def forward(self, x: Tensor) -> Tensor:
