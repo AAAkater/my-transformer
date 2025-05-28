@@ -44,8 +44,7 @@ class SentencePieceVocab:
         self.sp_model.Load(sp_model_path)
         # 构建id到token的映射
         self.id2token = {
-            i: self.sp_model.IdToPiece(i)
-            for i in range(self.sp_model.GetPieceSize())
+            id: self.id_to_piece(id) for id in range(self.vocab_size)
         }
 
         # 构建token到id的映射
@@ -59,6 +58,9 @@ class SentencePieceVocab:
 
     def decode(self, ids: list[int]) -> str:
         return self.sp_model.DecodeIds(ids)
+
+    def id_to_piece(self, id: int) -> str:
+        return self.sp_model.IdToPiece(id)
 
     def __len__(self):
         return len(self.id2token)
