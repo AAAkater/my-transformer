@@ -1,5 +1,6 @@
 import torch
-from torch.utils.data import Dataset
+from torch import Tensor
+from torch.utils.data import DataLoader, Dataset
 
 from data.transformer_dataset.build_vocab import SentencePieceVocab
 from models.transformer.config import settings
@@ -107,11 +108,11 @@ if __name__ == "__main__":
     print(f"分词结果: {en_model.encode_as_pieces(sample_en)}")
     print(f"ID序列: {en_model.encode_as_ids(sample_en)}")
 
-    # 使用DataLoader加载数据
-    from torch.utils.data import DataLoader
-
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
     for batch in dataloader:
-        print(f"源语言批次形状: {batch['src'].shape}")
-        print(f"目标语言批次形状: {batch['tgt'].shape}")
+        src: Tensor = batch["src"]
+        tgt: Tensor = batch["tgt"]
+
+        print(f"源语言批次形状: {src.shape},{src[0,:20]=}")
+        print(f"目标语言批次形状: {tgt.shape},{tgt[0,:20]=}")
         break
