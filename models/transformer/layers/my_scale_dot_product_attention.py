@@ -1,3 +1,5 @@
+import math
+
 from torch import Tensor, nn
 
 
@@ -10,7 +12,7 @@ class ScaleDotProductAttention(nn.Module):
         d_k = q.size(-1)
 
         # Q * K^T/sqrt(d_k)
-        scores = (q @ k.transpose(-2, -1)) / d_k**0.5
+        scores = (q @ k.transpose(-2, -1)) / math.sqrt(d_k)
 
         # 得出的scores是每个维度(d_1-d_v)都考虑了在当前维度(这一列)
         # 当前token对所有token的注意力后更新的新的值，
