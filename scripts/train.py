@@ -1,5 +1,6 @@
 import os
 
+import matplotlib.pyplot as plt
 import torch
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
@@ -11,6 +12,27 @@ from data.transformer_dataset.my_dataset import (
 )
 from models.transformer.config import settings
 from models.transformer.main import Transformer
+
+
+def show_loss_curve(losses: list[float], save_dir: str):
+    """
+    Plot and save the loss curve.
+
+    Args:
+        losses: List of loss values for each epoch
+        save_dir: Directory to save the plot
+    """
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, len(losses) + 1), losses, marker="o")
+    plt.title("Training Loss over Epochs")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.grid(True)
+
+    # 保存图表
+    plt.savefig(os.path.join(save_dir, "loss_curve.png"))
+    plt.close()
+    print("Loss curve has been saved to loss_curve.png")
 
 
 def train_model(
@@ -35,6 +57,10 @@ def train_model(
     model = model.to(device)
     save_dir = "checkpoints"
     os.makedirs(save_dir, exist_ok=True)
+
+    # 用于记录每个epoch的损失值
+    epoch_losses: list[float] = []
+
     for epoch in range(epochs):
         print(f"Epoch {epoch + 1}/{epochs}")
         model.train()
@@ -58,6 +84,7 @@ def train_model(
                 print(f"Batch {batch_idx}, Loss: {loss.item()}")
 
         avg_loss = total_loss / len(train_loader)
+        epoch_losses.append(avg_loss)  # 记录每个epoch的平均loss
         print(f"Epoch {epoch + 1}, Average Loss: {avg_loss}")
 
         if (epoch + 1) % 5 == 0:
@@ -72,6 +99,9 @@ def train_model(
             )
             torch.save(checkpoint, checkpoint_path)
             print(f"Saved model checkpoint to {checkpoint_path}")
+
+    # 训练结束后绘制损失曲线
+    show_loss_curve(epoch_losses, save_dir)
 
 
 def val_model(
