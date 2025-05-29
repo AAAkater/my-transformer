@@ -1,6 +1,7 @@
 import torch
 from torch import Tensor, nn
 
+from models.transformer.config import settings
 from models.transformer.decoder import Decoder
 from models.transformer.encoder import Encoder
 
@@ -49,7 +50,6 @@ class Transformer(nn.Module):
         tgt_mask = self.make_tgt_mask(tgt)
 
         enc_src: Tensor = self.encoder(src, src_mask)
-
         output: Tensor = self.decoder(tgt, enc_src, tgt_mask, src_mask)
 
         return output
@@ -102,7 +102,7 @@ class Transformer(nn.Module):
             torch.tril(torch.ones((tgt_len, tgt_len), dtype=torch.bool))
             .unsqueeze(0)
             .unsqueeze(0)
-        )
+        ).to(settings.device)
         # merge: [batch, 1, tgt_len, tgt_len]
         tgt_mask = tgt_pad_mask & tgt_sub_mask
         return tgt_mask
