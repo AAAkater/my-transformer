@@ -25,19 +25,25 @@ class DecoderLayer(nn.Module):
         self,
         dec_out: Tensor,
         enc_out: Tensor,
-        src_mask: Tensor,
         tgt_mask: Tensor,
-    ):
+        src_mask: Tensor,
+    ) -> Tensor:
         """
+        执行Transformer解码器层的前向传播。
 
         Args:
-            dec_out (Tensor): 解码器输出
-            enc_out (Tensor): 编码器输出
-            src_mask (Tensor): 来自编码器的mask
-            tgt_mask (Tensor): 来自解码器的mask
+            dec_out (Tensor): 解码器的输入张量，形状通常为(batch_size, tgt_seq_len, d_model)
+            enc_out (Tensor): 编码器的输出张量，形状通常为(batch_size, src_seq_len, d_model)
+            tgt_mask (Tensor): 目标序列的注意力掩码，防止关注到未来位置
+            src_mask (Tensor): 源序列的注意力掩码，防止关注到填充位置
 
         Returns:
-            _type_: 解码器输出
+            Tensor: 经过解码器层处理后的输出张量,形状与dec_out相同
+
+        Note:
+            1. 执行解码器自注意力计算，使用残差连接和层归一化
+            2. 执行编码器-解码器注意力计算，使用残差连接和层归一化
+            3. 通过前馈网络处理，使用残差连接和层归一化
         """
         # self-attention
         residual = dec_out.clone()
