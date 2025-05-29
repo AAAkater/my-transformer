@@ -42,10 +42,7 @@ class DecoderLayer(nn.Module):
         # self-attention
         residual = dec_out.clone()
         dec_out = self.dec_self_attn(
-            dec_out,
-            dec_out,
-            dec_out,
-            tgt_mask,
+            q=dec_out, k=dec_out, v=dec_out, mask=tgt_mask
         )
         # 残差连接
         dec_out += residual
@@ -54,10 +51,7 @@ class DecoderLayer(nn.Module):
         # encoder-decoder attention
         residual = dec_out.clone()
         dec_out = self.enc_dec_attn(
-            dec_out,
-            enc_out,
-            enc_out,
-            src_mask,
+            q=dec_out, k=enc_out, v=enc_out, mask=src_mask
         )
         # 残差连接
         dec_out += residual
