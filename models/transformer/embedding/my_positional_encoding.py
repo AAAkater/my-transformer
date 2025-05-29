@@ -1,6 +1,8 @@
 import torch
 from torch import Tensor, nn
 
+from models.transformer.config import settings
+
 
 class PositionalEncoding(nn.Module):
     """
@@ -54,7 +56,7 @@ class PositionalEncoding(nn.Module):
                 step=2,
                 dtype=torch.float,
             )
-            * -(torch.log(Tensor(10000.0)) / d_model)
+            * -(torch.log(Tensor([10000.0])) / d_model)
         )
 
         # 使用sin函数计算偶数位置的编码
@@ -67,4 +69,4 @@ class PositionalEncoding(nn.Module):
         batch_size, seq_len = x.size()
         # 返回对应序列长度的位置编码
         # 注意这里只返回编码矩阵，实际使用时需要与输入相加
-        return self.encoding[:seq_len, :]
+        return self.encoding[:seq_len, :].to(settings.device)
