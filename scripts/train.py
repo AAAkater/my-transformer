@@ -1,3 +1,5 @@
+import os
+
 import torch
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
@@ -31,12 +33,15 @@ def train_model(
         device: Device to run the training on (e.g., "cuda" or "cpu").
     """
     model = model.to(device)
+    save_dir = "checkpoints"
+    os.makedirs(save_dir, exist_ok=True)
     for epoch in range(epochs):
         print(f"Epoch {epoch + 1}/{epochs}")
         model.train()
         total_loss = 0
-        for batch_idx, (src, tgt) in enumerate(train_loader):
-            src, tgt = src.to(device), tgt.to(device)
+        for batch_idx, batch in enumerate(train_loader):
+            src: Tensor = batch["src"].to(device)
+            tgt: Tensor = batch["tgt"].to(device)
             optimizer.zero_grad()
             # (batch_size, seq_len-1, vocab_size)
             output: Tensor = model(src, tgt[:, :-1])
@@ -51,9 +56,22 @@ def train_model(
             total_loss += loss.item()
             if batch_idx % 100 == 0:
                 print(f"Batch {batch_idx}, Loss: {loss.item()}")
-        print(
-            f"Epoch {epoch + 1}, Average Loss: {total_loss / len(train_loader)}"
-        )
+
+        avg_loss = total_loss / len(train_loader)
+        print(f"Epoch {epoch + 1}, Average Loss: {avg_loss}")
+
+        if (epoch + 1) % 5 == 0:
+            checkpoint = {
+                "epoch": epoch + 1,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "loss": avg_loss,
+            }
+            checkpoint_path = os.path.join(
+                save_dir, f"checkpoint_epoch_{epoch + 1}.pt"
+            )
+            torch.save(checkpoint, checkpoint_path)
+            print(f"Saved model checkpoint to {checkpoint_path}")
 
 
 def val_model(
@@ -98,11 +116,11 @@ def val_model(
 if __name__ == "__main__":
     # Initialize model, optimizer, and loss function
     model = Transformer(
-        src_pad_idx=zh_model.pad_id(),
-        tgt_pad_idx=en_model.pad_id(),
-        tgt_sos_idx=en_model.bos_id(),
-        src_vocab_size=zh_model.get_vocab_size(),
-        tgt_vocab_size=en_model.get_vocab_size(),
+        src_pad_idx=zh_model.pad_id,
+        tgt_pad_idx=en_model.pad_id,
+        tgt_sos_idx=en_model.bos_id,
+        src_vocab_size=zh_model.vocab_size,
+        tgt_vocab_size=en_model.vocab_size,
         d_model=settings.d_model,
         n_head=settings.n_heads,
         n_layer=settings.n_layers,
@@ -111,7 +129,7 @@ if __name__ == "__main__":
     )
 
     optimizer = torch.optim.Adam(model.parameters(), lr=settings.learning_rate)
-    criterion = nn.CrossEntropyLoss(ignore_index=en_model.pad_id())
+    criterion = nn.CrossEntropyLoss(ignore_index=en_model.pad_id)
 
     # Get training data loader
     train_loader = DataLoader(
