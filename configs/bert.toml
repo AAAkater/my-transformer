@@ -1,0 +1,18 @@
+# 批次大小
+batch_size = 128
+# 一个句子最多包含的token数
+max_seq_len = 256
+# 用来表示一个词的向量长度
+d_model = 512
+# Encoder Layer 和 Decoder Layer的个数
+n_layers = 6
+# 多头注意力中head的个数
+n_heads = 8
+# FFN的隐藏层神经元个数
+ffn_hidden = 2048
+# 分头后的q、k、v词向量长度
+d_k = 64
+# 暂退率
+drop_rate = 0.1
+# 学习率
+learning_rate = 0.0001
